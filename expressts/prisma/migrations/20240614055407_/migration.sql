@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Orders" ADD CONSTRAINT "Orders_uid_fkey" FOREIGN KEY ("uid") REFERENCES "Profile"("uid") ON DELETE CASCADE ON UPDATE CASCADE;

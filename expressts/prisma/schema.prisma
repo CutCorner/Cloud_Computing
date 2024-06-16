@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id Int @id @default(autoincrement())
+  uid String @unique
+  role Role
+  fullName String
+  picture String?
+  reviews Review[]
+  store Barber[]
+  ordersTx Orders[]
+}
+
+model Barber {
+  id Int @id @default(autoincrement())
+  owner String 
+  barberId String @unique @default(cuid())
+  name String
+  img_src String
+  lat Float
+  long Float
+  location String
+
+  
+  addons ListAddon[]
+  // orders Orders[]
+  modelsHairs ListModelSeller[]
+  // reviews Review[]
+  
+
+  barberProfile Profile @relation(fields: [owner], references: [uid])
+}
+
+
+
+model ListAddon {
+  id Int @id @default(autoincrement())
+  barberId String
+  name String
+  price Float
+
+  @@unique([barberId,name],name: "unique_barber_addon")
+  addOns Barber @relation(fields: [barberId], references: [barberId],onDelete: Cascade)
+}
+
+model Orders {
+  id Int @id @default(autoincrement())
+  id_order String @unique
+  uid String
+  model String
+  addon String
+  price Float
+  barberId String
+  reviewByIdOrder Review[]
+  status_payment Status
+
+
+  orderHistoryProfile Profile @relation(fields: [uid], references: [uid], onDelete: Cascade)
+  // orderHistory Barber @relation(fields: [barberId], references: [barberId],onDelete: Cascade)
+} 
+
+model ListModelSeller {
+  id Int @id @default(autoincrement())
+  barberId String
+  name String 
+  // modelsHair ListModel[]
+ 
+ @@unique([barberId,name],name: "unique_barber_model")
+  models Barber @relation(fields: [barberId], references: [barberId],onDelete: Cascade)
+
+
+}
+
+// model Image {
+//   id Int @id @default(autoincrement())
+//   url String
+//   barberId String
+
+//   images ListModel @relation(fields: [id], references: [id],onDelete: Cascade)
+
+
+// }
+
+model ListModel {
+  id Int @id @default(autoincrement())
+  name String @unique
+  price Float
+  src_img String
+  
+  // model ListModelSeller @relation(fields: [name], references: [name],onDelete: Cascade)
+
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+  id_order String @unique
+  uid String
+  barberId String
+  comment String
+  rating Float
+  model String
+  addon String
+  date DateTime @default(now())
+  
+  orderHistory Orders @relation(fields: [id_order], references: [id_order],onDelete: Cascade)
+  review_to_user Profile @relation(fields: [uid], references: [uid])
+  // review_to_admin Barber @relation(fields: [barberId], references: [barberId],onDelete: Cascade)
+}
+
+
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Status {
+  PENDING
+  SUCCESS
+  CANCEL
+}
